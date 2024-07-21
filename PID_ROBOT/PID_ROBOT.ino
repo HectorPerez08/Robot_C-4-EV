@@ -1,26 +1,15 @@
 #define ENCODER_AC 12 // Pin for Encoder A
 #define ENCODER_BC 14 // Pin for Encoder B
-//#define ENCODER_ZC 13 // Pin for Encoder B
 #define ENCODER_AH 27 // Pin for Encoder A
 #define ENCODER_BH 26 // Pin for Encoder B
-//#define ENCODER_ZH 15 // Pin for Encoder B
 #define ENCODER_ACO 16 // Pin for Encoder A
 #define ENCODER_BCO 17 // Pin for Encoder B
-//#define ENCODER_ZCO 25 // Pin for Encoder B
 #define ENCODER_AM 33 // Pin for Encoder A
 #define ENCODER_BM 32 // Pin for Encoder B
-//#define ENCODER_ZM 4 // Pin for Encoder B
-//#include <ESP32Servo.h>
-//const int pinServo = 4; // Pin GPIO al que está conectado el servo
-//Servo miServo;
 volatile int encoderc_value = 0;
-//volatile int encoderzc_value = 0;
 volatile int encoderh_value = 0;
-//volatile int encoderzh_value = 0;
 volatile int encoderco_value = 0;
-//volatile int encoderzco_value = 0;
 volatile int encoderm_value = 0;
-//volatile int encoderzm_value = 0;
 const int dirc=22;
 const int pinstepc = 23;
 const int dirh=19;
@@ -71,40 +60,31 @@ float  x1m = 0;  // Inicialización de x1
 float  x2m = 0;  // Inicialización de x2
 float k1m, k2m, derrorm, ierrorm, cvm;
 int stepdelay =750;
-//int mano,mano1; 
-//int f=0;
 int fm=0;
 int giro,giro2;
 int efector,efector2;
-//TaskHandle_t Task_2; 
+int paro=0; 
 void IRAM_ATTR encoder_cadera() {
-  // Reading the current state of encoder A and B
   int Ac = digitalRead(ENCODER_AC);
   int Bc = digitalRead(ENCODER_BC);
-  // If the state of A changed, it means the encoder has been rotated
-  if ((Ac == HIGH) != (Bc == LOW)) {
-    encoderc_value--;
-  } else {
-    encoderc_value++;
-  }
+    if ((Ac == HIGH) != (Bc == LOW)) {
+      encoderc_value--;
+    } else {
+        encoderc_value++;
+      }
 }
-
 void IRAM_ATTR encoder_hombro() {
-  // Reading the current state of encoder A and B
   int Ah = digitalRead(ENCODER_AH);
   int Bh = digitalRead(ENCODER_BH);
-  // If the state of A changed, it means the encoder has been rotated
-  if ((Ah == HIGH) != (Bh == LOW)) {
-    encoderh_value--;
-  } else {
-    encoderh_value++;
-  }
+    if ((Ah == HIGH) != (Bh == LOW)) {
+      encoderh_value--;
+    } else {
+      encoderh_value++;
+      }
 }
 void  IRAM_ATTR encoder_codo() {
-  // Reading the current state of encoder A and B
   int Aco = digitalRead(ENCODER_ACO);
   int Bco = digitalRead(ENCODER_BCO);
-  // If the state of A changed, it means the encoder has been rotated
   if ((Aco == HIGH) != (Bco == LOW)) {
     encoderco_value++;
   } else {
@@ -113,10 +93,8 @@ void  IRAM_ATTR encoder_codo() {
 }
 void IRAM_ATTR encoder_muneca() {
   if(fm==0){
-  // Reading the current state of encoder A and B
   int Am = digitalRead(ENCODER_AM);
   int Bm = digitalRead(ENCODER_BM);
-  // If the state of A changed, it means the encoder has been rotated
   if ((Am == HIGH) != (Bm == LOW)) {
     encoderm_value--;
   } else {
@@ -143,128 +121,74 @@ pinMode(dire,OUTPUT);
 pinMode(pinstepe,OUTPUT);
 pinMode(ENCODER_AC, INPUT_PULLUP);
 pinMode(ENCODER_BC, INPUT_PULLUP);
-//pinMode(ENCODER_ZC, INPUT_PULLUP);
 pinMode(ENCODER_AH, INPUT_PULLUP);
 pinMode(ENCODER_BH, INPUT_PULLUP);
-//pinMode(ENCODER_ZH, INPUT_PULLUP);
 pinMode(ENCODER_ACO, INPUT_PULLUP);
 pinMode(ENCODER_BCO, INPUT_PULLUP);
-//pinMode(ENCODER_ZCO, INPUT_PULLUP);
 pinMode(ENCODER_AM, INPUT_PULLUP);
 pinMode(ENCODER_BM, INPUT_PULLUP);
-//pinMode(ENCODER_ZM, INPUT_PULLUP);
 attachInterrupt(digitalPinToInterrupt(ENCODER_AC), encoder_cadera, CHANGE);
 attachInterrupt(digitalPinToInterrupt(ENCODER_AH), encoder_hombro, CHANGE);
 attachInterrupt(digitalPinToInterrupt(ENCODER_ACO), encoder_codo, CHANGE);
 attachInterrupt(digitalPinToInterrupt(ENCODER_AM), encoder_muneca, CHANGE);
-/*
-attachInterrupt(digitalPinToInterrupt(ENCODER_ZC), encoder_isrc, FALLING);
-attachInterrupt(digitalPinToInterrupt(ENCODER_ZH), encoder_isrh, FALLING);
-attachInterrupt(digitalPinToInterrupt(ENCODER_ZCO), encoder_isrco, FALLING);
-attachInterrupt(digitalPinToInterrupt(ENCODER_ZM), encoder_isrm, FALLING);*/
 }
 
 void loop() {
- /* if (f==0){
-    while(encoderzh_value==0){
-  digitalWrite(dirh,LOW);
-  digitalWrite(pinsteph,HIGH);
-  delayMicroseconds(stepdelay);
-  digitalWrite(pinsteph,LOW);
-  delayMicroseconds(stepdelay);
- }
-  while(encoderzc_value==0){
-  digitalWrite(dirc,HIGH);
-  digitalWrite(pinstepc,HIGH);
-  delayMicroseconds(stepdelay);
-  digitalWrite(pinstepc,LOW);
-  delayMicroseconds(stepdelay);
- }
-   while(encoderzco_value==0){
-  digitalWrite(dirco,LOW);
-  digitalWrite(pinstepco,HIGH);
-  delayMicroseconds(stepdelay);
-  digitalWrite(pinstepco,LOW);
-  delayMicroseconds(stepdelay);
- }
- while(encoderzm_value==0){
-   digitalWrite(dirm1,LOW);
-  digitalWrite(pinstepm1,HIGH);
-  delayMicroseconds(stepdelay);
-  digitalWrite(pinstepm1,LOW);
-  delayMicroseconds(stepdelay);
-  digitalWrite(dirm2,LOW);
-  digitalWrite(pinstepm2,HIGH);
-  delayMicroseconds(stepdelay);
-  digitalWrite(pinstepm2,LOW);
-  delayMicroseconds(stepdelay); 
- }
- f=1;
- }
- if(f==1){
- //if(encoderzc_value>0 && encoderzh_value>0 && encoderzco_value>0){
-  detachInterrupt(digitalPinToInterrupt(ENCODER_ZC));
-  detachInterrupt(digitalPinToInterrupt(ENCODER_ZCO));
-  detachInterrupt(digitalPinToInterrupt(ENCODER_ZH));
-  detachInterrupt(digitalPinToInterrupt(ENCODER_ZM));
-    encoderc_value=220;  
-    encoderh_value=-60;  
-    encoderco_value=180; 
-    encoderm_value=180; 
-  f=2;
-  }*/
- // if (f==2){
- // mano1=mano;
-   if (Serial.available() > 0) {
-     if (Serial.read() == 'r') {
- //  Leemos el primer número
-  SP_C = Serial.parseInt();
-  SP_H = Serial.parseInt();
-  SP_CO = Serial.parseInt();
-  SP_M = Serial.parseInt();
-  giro = Serial.parseInt();
-  efector = Serial.parseInt();
-  }} 
- // }
-//miServo.write(mano); 
-PID_cadera();
-PID_hombro();
-PID_codo();
-PID_muneca();
-//if(mano!=mano1){
-
-//}
- if ((errorco<2.4 && errorco>-2.4) && (errorh<2.4&&errorh>-2.4) && (errorc<2.4&& errorc>-2.4)&&(errorm<2.4 && errorm>-2.4)){
-  //Serial.println("w 2");
-if(giro>giro2){
-  fm=1;
-  digitalWrite(dirm1,HIGH);
-  digitalWrite(pinstepm1,HIGH);
-  delayMicroseconds(stepdelay);
-  digitalWrite(pinstepm1,LOW);
-  delayMicroseconds(stepdelay);
-  digitalWrite(dirm2,LOW);
-  digitalWrite(pinstepm2,HIGH);
-  delayMicroseconds(stepdelay);
-  digitalWrite(pinstepm2,LOW);
-  delayMicroseconds(stepdelay);
-  giro2=giro2+1;
-}
-fm=0;
-if(giro<giro2){
-  fm=1;
-   digitalWrite(dirm1,LOW);
-  digitalWrite(pinstepm1,HIGH);
-  delayMicroseconds(stepdelay);
-  digitalWrite(pinstepm1,LOW);
-  delayMicroseconds(stepdelay);
-  digitalWrite(dirm2,HIGH);
-  digitalWrite(pinstepm2,HIGH);
-  delayMicroseconds(stepdelay);
-  digitalWrite(pinstepm2,LOW);
-  delayMicroseconds(stepdelay);
-  giro2=giro2-1;
-}
+  if (Serial.available() > 0){
+    if(Serial.read() == 'e'){
+    paro=1;
+    SP_C=encoderc_value*0.3;
+    SP_H=encoderh_value*0.3;
+    SP_CO=encoderco_value*0.3; 
+    SP_M=encoderm_value*0.3;
+    giro=giro2; 
+    efector=efector2; 
+    }
+    if (Serial.read() == 'r') {
+    paro=0;
+    SP_C = Serial.parseInt();
+    SP_H = Serial.parseInt();
+    SP_CO = Serial.parseInt();
+    SP_M = Serial.parseInt();
+    giro = Serial.parseInt();
+    efector = Serial.parseInt();
+    }
+  } 
+  if(paro == 0 ){
+  PID_cadera();
+  PID_hombro();
+  PID_codo();
+  PID_muneca();
+    if ((errorco<2.4 && errorco>-2.4) && (errorh<2.4&&errorh>-2.4) && (errorc<2.4&& errorc>-2.4)&&(errorm<2.4 && errorm>-2.4)){
+      if(giro>giro2){
+      fm=1;
+      digitalWrite(dirm1,HIGH);
+      digitalWrite(pinstepm1,HIGH);
+      delayMicroseconds(stepdelay);
+      digitalWrite(pinstepm1,LOW);
+      delayMicroseconds(stepdelay);
+      digitalWrite(dirm2,LOW);
+      digitalWrite(pinstepm2,HIGH);
+      delayMicroseconds(stepdelay);
+      digitalWrite(pinstepm2,LOW);
+      delayMicroseconds(stepdelay);
+      giro2=giro2+1;
+      }
+    fm=0;
+      if(giro<giro2){
+      fm=1;
+      digitalWrite(dirm1,LOW);
+      digitalWrite(pinstepm1,HIGH);
+      delayMicroseconds(stepdelay);
+      digitalWrite(pinstepm1,LOW);
+      delayMicroseconds(stepdelay);
+      digitalWrite(dirm2,HIGH);
+      digitalWrite(pinstepm2,HIGH);
+      delayMicroseconds(stepdelay);
+      digitalWrite(pinstepm2,LOW);
+      delayMicroseconds(stepdelay);
+      giro2=giro2-1;
+      }
 fm=0;
 if(efector>efector2){
   digitalWrite(dire,HIGH);
@@ -283,12 +207,7 @@ if(efector<efector2){
   efector2=efector2-1;
 }
   }
-  /*if ((errorco>2.4 || errorco<-2.4) || (errorh>2.4||errorh<-2.4) || (errorc>2.4|| errorc<-2.4)){
-  Serial.println("w 1");
-  //delay(250);
-  }}
-*/
-}
+}}
 /*
 void loop2(void * parameter){
   for(;;){
@@ -429,16 +348,4 @@ if(cvc>0){
  delayMicroseconds(stepdelay);
 }
 cvc=0;
-}/*
-void encoder_isrc(){
-    encoderzc_value++;
 }
-void encoder_isrh(){
-    encoderzh_value++;
-}
-void encoder_isrco(){
-    encoderzco_value++;
-}
-void encoder_isrm(){
-    encoderzm_value++;
-}*/

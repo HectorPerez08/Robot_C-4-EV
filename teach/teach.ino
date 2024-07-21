@@ -12,7 +12,7 @@
 #define TFT_CS 15  //TFT CS to PIN 15
 #include <TFT_eSPI.h>
 TFT_eSPI tft = TFT_eSPI();
-#include <JPEGDecoder.h> // ********** JPEG decoder  ********** in case JPG images used
+//#include <JPEGDecoder.h> // ********** JPEG decoder  ********** in case JPG images used
 
 
 // ********** TFT_eSPI touch **********
@@ -29,7 +29,7 @@ TFT_eSPI tft = TFT_eSPI();
 TFT_eSPI_Button key[totalButtonNumber];  // TFT_eSPI button class
 //variables loop 2
 TFT_eSPI_Button key0[totalButtonNumber0];
-
+#define paro 12
 
 const float pi = 3.14159;
 int a1=24.75;
@@ -60,6 +60,11 @@ Ticker automatic;
 //####################################################################################################
 // Setup
 //####################################################################################################
+void IRAM_ATTR PARO_EMERGENCIA() {
+    Serial.println("e");
+    f1=2;
+    f0=0;
+}
 void FuncionContar() {
  if(f1==1){
   if(fA==1){
@@ -67,7 +72,9 @@ J=J+6;
  }
 }}
 void setup() {
+attachInterrupt(digitalPinToInterrupt(paro), PARO_EMERGENCIA, FALLING);
 automatic.attach(5, FuncionContar);
+pinMode(paro,INPUT_PULLDOWN);
 pinMode(abrir,INPUT);
 pinMode(cerrar,INPUT);
 pinMode(x1,INPUT);
@@ -264,12 +271,19 @@ void loop() {
 
   manual();
   automatico();
+if(paro==HIGH){
 Serial.print("r "+ String(theta1));
 Serial.print(" "+ String(theta2));
 Serial.print(" "+ String(theta3));
 Serial.print(" "+ String(theta4));
 Serial.print(" "+ String(giro));
 Serial.println(" "+ String(efector));
+} else{
+ Serial.println("e");
+    f1=2;
+    f0=0;
+}
+
 }
 void manual(){
      if(f1==0){
